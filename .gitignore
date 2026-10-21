@@ -1,0 +1,24 @@
+# Build outputs and local environment
+.venv/
+build/
+dist/
+*.spec
+__pycache__/
+*.py[cod]
+.DS_Store
+.vscode/
+.idea/
+
+# No personal, secret or trading files
+.env
+.env.*
+*.pem
+*.pfx
+*.key
+*secret*
+*token*
+*.log
+*.sqlite
+*.db
+*.csv
+*.xlsx
