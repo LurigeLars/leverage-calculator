@@ -34,10 +34,10 @@
 
       <div class="range-field">
         <div class="field-heading">
-          <label for="move-range">Adobe move</label>
-          <div class="value-input"><input type="number" id="move-value" min="-100" max="100" step="0.05" value="0.50" aria-label="Adobe move in percent"><span>%</span></div>
+          <label for="move-range">Underlying move</label>
+          <div class="value-input"><input type="number" id="move-value" min="-100" max="100" step="0.05" value="0.50" aria-label="Underlying move in percent"><span>%</span></div>
         </div>
-        <input id="move-range" type="range" min="-5" max="5" step="0.05" value="0.50" aria-label="Adobe move in percent">
+        <input id="move-range" type="range" min="-5" max="5" step="0.05" value="0.50" aria-label="Underlying move in percent">
       </div>
 
       <div class="range-field range-field-spread">
@@ -53,8 +53,8 @@
         <output id="net-result" class="result positive">+6.15 %</output>
         <div class="result-divider"></div>
         <dl class="result-details result-details-compact">
-          <div><dt>Break-even in Adobe</dt><dd id="break-even">+0.09 %</dd></div>
-          <div class="goal-row"><dt>Adobe move for <span id="target-label">+5%</span> net</dt><dd><span id="target-move">+0.42 %</span></dd></div>
+          <div><dt>Break-even in underlying</dt><dd id="break-even">+0.09 %</dd></div>
+          <div class="goal-row"><dt>Underlying move for <span id="target-label">+5%</span> net</dt><dd><span id="target-move">+0.42 %</span></dd></div>
           <div id="money-row" hidden><dt>Estimated profit/loss</dt><dd id="money-result"></dd></div>
         </dl>
       </div>
