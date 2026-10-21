@@ -73,6 +73,16 @@
           <button id="copy-summary" class="secondary-button" type="button">Copy summary</button>
         </div>
         <p class="advanced-metric">Max spread for target: <strong id="max-spread">6.35 %</strong></p>
+        <div class="update-tool">
+          <h2>Software updates</h2>
+          <p id="update-status" role="status">Update checks are available in the Windows app.</p>
+          <p id="update-version" class="update-version" hidden></p>
+          <div class="update-buttons">
+            <button id="check-updates" class="secondary-button" type="button" disabled>Check for updates</button>
+            <button id="install-update" class="secondary-button" type="button" hidden>Install update</button>
+          </div>
+          <p class="update-explain">The Windows app checks GitHub Releases at startup. Installing always requires confirmation.</p>
+        </div>
         <div class="quote-tool">
           <h2>Calculate spread from bid / ask</h2>
           <p>Enter the price you can sell at (bid) and the price you can buy at (ask). No market data is fetched automatically.</p>
