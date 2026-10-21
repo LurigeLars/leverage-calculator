@@ -96,3 +96,13 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; border-radius: 
 @media(prefers-reduced-motion: no-preference) {
   .leverage-button, .secondary-button { transition: background-color .14s ease, color .14s ease; }
 }
+
+
+.update-tool { border-top:1px solid #252525; margin-top:18px; padding:16px 0; }
+.update-tool h2 { font-size:15px; font-weight:650; margin:0 0 8px; }
+.update-tool p { font-size:13px; color:#b4b4b4; margin:0 0 12px; line-height:1.45; }
+.update-buttons { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.update-buttons button:disabled { opacity:.48; cursor:not-allowed; }
+.update-tool .update-explain { color:#8e8e8e; font-size:12px; margin:12px 0 0; }
+.update-tool .update-version { color:#35d990; }
+.advanced-metric { font-size:14px; color:#b4b4b4; }

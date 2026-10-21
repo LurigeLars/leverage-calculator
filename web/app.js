@@ -177,5 +177,66 @@
     setTimeout(() => { button.textContent = 'Copy summary'; }, 1800);
   });
 
+  // A narrowly scoped native bridge is present only in the packaged Windows app.
+  // Browser-only usage remains completely offline and has no updater.
+  const updateStatus = $('update-status');
+  const versionInfo = $('update-version');
+  const checkButton = $('check-updates');
+  const installButton = $('install-update');
+
+  async function checkUpdates(silent = false) {
+    const api = window.pywebview && window.pywebview.api;
+    if (!api || !api.check_for_updates) return;
+    checkButton.disabled = true;
+    if (!silent) updateStatus.textContent = 'Checking GitHub Releases…';
+    try {
+      const result = await api.check_for_updates();
+      installButton.hidden = true;
+      if (!result.ok) {
+        updateStatus.textContent = result.message || 'Update check unavailable.';
+        return;
+      }
+      versionInfo.hidden = false;
+      versionInfo.textContent = 'Installed version: v' + result.current_version;
+      if (result.available) {
+        updateStatus.textContent = 'Version v' + result.version + ' is available.';
+        installButton.hidden = false;
+        installButton.textContent = 'Install v' + result.version;
+      } else {
+        updateStatus.textContent = 'You are running the latest version.';
+      }
+    } catch (_) {
+      updateStatus.textContent = 'Update check unavailable. Try again later.';
+    } finally {
+      checkButton.disabled = false;
+    }
+  }
+
+  checkButton.addEventListener('click', () => checkUpdates(false));
+  installButton.addEventListener('click', async () => {
+    const api = window.pywebview && window.pywebview.api;
+    if (!api || !api.install_update) return;
+    if (!window.confirm('Download and verify the new installer from GitHub, then open the Windows setup wizard?')) return;
+    installButton.disabled = true;
+    checkButton.disabled = true;
+    updateStatus.textContent = 'Downloading and verifying the official release…';
+    try {
+      const result = await api.install_update();
+      updateStatus.textContent = result.message || 'Update could not be started.';
+      if (!result.ok) installButton.disabled = false;
+    } catch (_) {
+      updateStatus.textContent = 'Update failed. No installation was started.';
+      installButton.disabled = false;
+    } finally {
+      checkButton.disabled = false;
+    }
+  });
+
+  window.addEventListener('pywebviewready', () => {
+    checkButton.disabled = false;
+    updateStatus.textContent = 'Checking GitHub Releases…';
+    checkUpdates(true);
+  });
+
   refresh();
 })();

@@ -32,7 +32,7 @@ if not exist ".venv\Scripts\python.exe" (
 if errorlevel 1 goto :failed
 
 echo [3/3] Building standalone Windows application...
-".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed --name LeverageCalculator --add-data "web;web" --collect-all webview --hidden-import webview.platforms.edgechromium desktop\main.py
+".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed --name LeverageCalculator --add-data "web;web" --add-data "VERSION;." --collect-all webview --hidden-import webview.platforms.edgechromium desktop\main.py
 if errorlevel 1 goto :failed
 
 echo.
