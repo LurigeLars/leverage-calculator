@@ -1,7 +1,7 @@
 """Offline Windows desktop wrapper for Leverage Calculator.
 
 All CSS and JavaScript are inlined from bundled local assets.
-No browser navigation, HTTP server, network, or data persistence.
+Only the opt-in desktop update bridge can contact public GitHub Releases.
 """
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ import hashlib
 import re
 import sys
 from pathlib import Path
+
+from updater import DesktopUpdater, bundled_version
 
 
 def assets_dir() -> Path:
@@ -61,6 +63,7 @@ def main() -> None:
     webview.create_window(
         "Leverage Calculator",
         html=build_offline_html(),
+        js_api=DesktopUpdater(bundled_version()),
         width=1000,
         height=900,
         min_size=(700, 640),
