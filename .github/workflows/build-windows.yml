@@ -1,7 +1,15 @@
-name: Build Windows EXE
+name: Build Windows and Publish Release
 
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish VERSION as a GitHub Release (main branch only)'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -9,31 +17,95 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      - name: Check out public source
+      - name: Check out source
         uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Test JavaScript calculation model
+      - name: Test calculations
         run: node --test tests/calculator.test.cjs
+      - name: Test updater security (offline)
+        run: python -m unittest discover -s tests -p "test_*.py" -v
       - name: Install pinned build dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-build.txt
-      - name: Build offline Windows program
+      - name: Build Windows executable
         run: >
           python -m PyInstaller
           --noconfirm --clean --onefile --windowed
           --name LeverageCalculator
           --add-data "web;web"
+          --add-data "VERSION;."
           --collect-all webview
           --hidden-import webview.platforms.edgechromium
           desktop/main.py
-      - name: Publish downloadable executable
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Invalid VERSION' }
+          $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup --no-progress --yes
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to install Inno Setup' }
+          }
+          if (-not (Test-Path $iscc)) { throw 'Inno Setup compiler missing' }
+          & $iscc "/DAppVersion=$version" 'installer\LeverageCalculator.iss'
+          if ($LASTEXITCODE -ne 0) { throw 'Windows installer compilation failed' }
+          if (-not (Test-Path 'dist\LeverageCalculator-Setup.exe')) { throw 'Installer missing' }
+      - name: Generate release checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash 'dist\LeverageCalculator-Setup.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  LeverageCalculator-Setup.exe" | Set-Content 'dist\SHA256SUMS.txt' -Encoding ascii
+      - name: Archive build output
         uses: actions/upload-artifact@v4
         with:
           name: LeverageCalculator-Windows
-          path: dist/LeverageCalculator.exe
+          path: |
+            dist/LeverageCalculator.exe
+            dist/LeverageCalculator-Setup.exe
+            dist/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30
+
+  publish-release:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release == true && github.ref == 'refs/heads/main'
+    needs: build-windows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: LeverageCalculator-Windows
+          path: release-files
+      - name: Verify version and publish immutable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n' < VERSION)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid VERSION'; exit 1; }
+          tag="v$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; refusing to overwrite."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists; refusing to overwrite."
+            exit 1
+          fi
+          gh release create "$tag" \
+            release-files/LeverageCalculator-Setup.exe \
+            release-files/LeverageCalculator.exe \
+            release-files/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title "Leverage Calculator $tag" \
+            --notes "Windows 64-bit release. Use LeverageCalculator-Setup.exe for installation and future in-app updates. SHA-256 verification is enforced by the updater. Source is public; binaries are unsigned."
