@@ -15,7 +15,7 @@ AppSupportURL=https://github.com/LurigeLars/leverage-calculator/issues
 AppUpdatesURL=https://github.com/LurigeLars/leverage-calculator/releases
 DefaultDirName={localappdata}\Programs\LeverageCalculator
 DefaultGroupName={#AppName}
-OutputDir=dist
+OutputDir=..\dist
 OutputBaseFilename=LeverageCalculator-Setup
 UninstallDisplayIcon={app}\{#AppExe}
 Compression=lzma2
@@ -29,7 +29,7 @@ RestartApplications=no
 DisableProgramGroupPage=yes
 
 [Files]
-Source: "dist\LeverageCalculator.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\LeverageCalculator.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\Leverage Calculator"; Filename: "{app}\{#AppExe}"
