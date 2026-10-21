@@ -1,0 +1,3 @@
+# Windows build-only dependencies. The offline browser calculator requires none.
+pywebview==5.4
+pyinstaller==6.16.0
