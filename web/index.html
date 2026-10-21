@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Leverage Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="calculator.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <main class="page">
+    <section class="calculator card" aria-labelledby="calculator-title">
+      <h1 id="calculator-title">Calculate potential return</h1>
+
+      <div class="field-grid leverage-field">
+        <label id="leverage-label">Leverage</label>
+        <div class="leverage-controls" role="group" aria-labelledby="leverage-label">
+          <div class="segmented" id="leverage-segments">
+            <button class="leverage-button" type="button" data-leverage="5" aria-pressed="false">5×</button>
+            <button class="leverage-button" type="button" data-leverage="10" aria-pressed="false">10×</button>
+            <button class="leverage-button" type="button" data-leverage="12" aria-pressed="false">12×</button>
+            <button class="leverage-button is-selected" type="button" data-leverage="15" aria-pressed="true">15×</button>
+          </div>
+          <div class="inline-number compact-number">
+            <label for="leverage-custom" class="visually-hidden">Custom leverage</label>
+            <input type="number" id="leverage-custom" min="0.1" max="100" step="0.1" value="15" inputmode="decimal" aria-label="Custom leverage">
+            <span aria-hidden="true">×</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="range-field">
+        <div class="field-heading">
+          <label for="move-range">Adobe move</label>
+          <div class="value-input"><input type="number" id="move-value" min="-100" max="100" step="0.05" value="0.50" aria-label="Adobe move in percent"><span>%</span></div>
+        </div>
+        <input id="move-range" type="range" min="-5" max="5" step="0.05" value="0.50" aria-label="Adobe move in percent">
+      </div>
+
+      <div class="range-field range-field-spread">
+        <div class="field-heading">
+          <label for="spread-range">Spread</label>
+          <div class="value-input"><input type="number" id="spread-value" min="0" max="100" step="0.05" value="1.35" aria-label="Spread in percent"><span>%</span></div>
+        </div>
+        <input id="spread-range" type="range" min="0" max="5" step="0.05" value="1.35" aria-label="Spread in percent">
+      </div>
+
+      <div class="result-panel" aria-live="polite" aria-atomic="true">
+        <p class="result-caption">Estimated net return before fees and slippage</p>
+        <output id="net-result" class="result positive">+6.15 %</output>
+        <div class="result-divider"></div>
+        <dl class="result-details result-details-compact">
+          <div><dt>Break-even in Adobe</dt><dd id="break-even">+0.09 %</dd></div>
+          <div class="goal-row"><dt>Adobe move for <span id="target-label">+5%</span> net</dt><dd><span id="target-move">+0.42 %</span></dd></div>
+          <div class="advanced-row"><dt>Max spread for target</dt><dd id="max-spread">6.35 %</dd></div>
+          <div id="money-row" hidden><dt>Estimated profit/loss</dt><dd id="money-result"></dd></div>
+        </dl>
+      </div>
+
+      <details class="more-settings" id="details-settings">
+        <summary>Advanced settings <span class="summary-note">target, fees, capital and quote spread helper</span></summary>
+        <div class="settings-grid">
+          <label for="target-value">Target return (%)</label>
+          <input id="target-value" type="number" min="0" max="1000" step="0.5" value="5">
+          <label for="fees-value">Fees (%)</label>
+          <input id="fees-value" type="number" min="0" max="100" step="0.05" value="0">
+          <label for="slippage-value">Extra slippage (%)</label>
+          <input id="slippage-value" type="number" min="0" max="100" step="0.05" value="0">
+          <label for="capital-value">Capital (optional)</label>
+          <input id="capital-value" type="number" min="0" step="1000" placeholder="None" autocomplete="off">
+          <button id="copy-summary" class="secondary-button" type="button">Copy summary</button>
+        </div>
+        <div class="quote-tool">
+          <h2>Calculate spread from bid / ask</h2>
+          <p>Enter the price you can sell at (bid) and the price you can buy at (ask). No market data is fetched automatically.</p>
+          <div class="quote-fields">
+            <label>Bid<input id="bid-value" type="number" min="0" step="any" placeholder="14.58" inputmode="decimal"></label>
+            <label>Ask<input id="ask-value" type="number" min="0" step="any" placeholder="14.78" inputmode="decimal"></label>
+            <button id="apply-quotes" class="secondary-button" type="button">Apply spread</button>
+          </div>
+          <p id="quote-error" class="inline-error" role="alert" hidden></p>
+        </div>
+      </details>
+
+      <p id="model-warning" class="warning" hidden></p>
+      <p class="disclaimer">The model assumes constant leverage and spread. Actual certificate pricing can also be affected by repricing, FX, financing and the market maker's execution.</p>
+    </section>
+  </main>
+</body>
+</html>
