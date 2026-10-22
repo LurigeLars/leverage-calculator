@@ -223,7 +223,12 @@
     try {
       const result = await api.install_update();
       updateStatus.textContent = result.message || 'Update could not be started.';
-      if (!result.ok) installButton.disabled = false;
+      if (result.ok) {
+        // Do not run setup while the old executable is still open.
+        await api.close_for_update();
+      } else {
+        installButton.disabled = false;
+      }
     } catch (_) {
       updateStatus.textContent = 'Update failed. No installation was started.';
       installButton.disabled = false;
