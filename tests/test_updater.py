@@ -101,6 +101,50 @@ class UpdateTests(unittest.TestCase):
         outcome = updater.DesktopUpdater("1.1.0").install_update()
         self.assertFalse(outcome["ok"])
 
+    def test_staging_does_not_start_installer_while_app_is_open(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as directory:
+            installer = Path(directory) / updater.SETUP_NAME
+            installer.write_bytes(b"verified installer placeholder")
+            with patch.object(updater.sys, "platform", "win32"), \
+                 patch.object(updater.sys, "frozen", True, create=True), \
+                 patch.object(updater, "latest_release", return_value={"available": True}), \
+                 patch.object(updater, "download_verified_installer", return_value=installer), \
+                 patch.object(updater.subprocess, "Popen") as spawn:
+                desktop = updater.DesktopUpdater("1.1.2")
+                result = desktop.install_update()
+                self.assertTrue(result["ok"])
+                spawn.assert_not_called()
+                self.assertEqual(desktop._pending_installer, installer)
+
+                launched = desktop.launch_after_window_closed()
+                self.assertTrue(launched)
+                spawn.assert_called_once()
+                args = spawn.call_args.args[0]
+                self.assertEqual(args[0], str(installer))
+                self.assertEqual(args[1], "/UPGRADEPID=" + str(updater.os.getpid()))
+                self.assertIn("/NORESTARTAPPLICATIONS", args)
+                self.assertFalse(spawn.call_args.kwargs["shell"])
+                self.assertIsNone(desktop._pending_installer)
+
+    def test_close_for_update_only_when_installer_staged(self):
+        import sys
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        desktop = updater.DesktopUpdater("1.1.2")
+        window = SimpleNamespace(destroy=Mock())
+        with patch.dict(sys.modules, {"webview": SimpleNamespace(windows=[window])}):
+            self.assertFalse(desktop.close_for_update()["ok"])
+            window.destroy.assert_not_called()
+            desktop._pending_installer = Path("verified-placeholder")
+            self.assertTrue(desktop.close_for_update()["ok"])
+            window.destroy.assert_called_once()
+
+    def test_no_installer_launch_when_not_staged(self):
+        with patch.object(updater.subprocess, "Popen") as spawn:
+            self.assertFalse(updater.DesktopUpdater("1.1.2").launch_after_window_closed())
+            spawn.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
