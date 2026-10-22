@@ -29,7 +29,8 @@ RestartApplications=no
 DisableProgramGroupPage=yes
 
 [Files]
-Source: "..\dist\LeverageCalculator.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\LeverageCalculator\LeverageCalculator.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\LeverageCalculator\_internal\*"; DestDir: "{app}\_internal"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\Leverage Calculator"; Filename: "{app}\{#AppExe}"
