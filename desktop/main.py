@@ -60,10 +60,11 @@ def build_offline_html() -> str:
 def main() -> None:
     import webview
 
+    updater = DesktopUpdater(bundled_version())
     webview.create_window(
         "Leverage Calculator",
         html=build_offline_html(),
-        js_api=DesktopUpdater(bundled_version()),
+        js_api=updater,
         width=1000,
         height=900,
         min_size=(700, 640),
@@ -71,6 +72,9 @@ def main() -> None:
         resizable=True,
     )
     webview.start(gui="edgechromium", debug=False)
+    # The WebView2 window has closed. Inno Setup will also wait until
+    # this parent process has fully exited before replacing the binary.
+    updater.launch_after_window_closed()
 
 
 if __name__ == "__main__":

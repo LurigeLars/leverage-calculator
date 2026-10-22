@@ -155,6 +155,7 @@ class DesktopUpdater:
         parse_version(current_version)
         self.current_version = current_version
         self._busy = False
+        self._pending_installer = None
 
     def check_for_updates(self) -> dict:
         try:
@@ -170,7 +171,7 @@ class DesktopUpdater:
             return {"ok": False, "message": "GitHub update check unavailable. Try again later."}
 
     def install_update(self) -> dict:
-        """Only called after the user explicitly clicks Install update and confirms."""
+        """Stage a verified update, but do not launch Setup while our EXE is running."""
         if self._busy:
             return {"ok": False, "message": "An update is already in progress."}
         if sys.platform != "win32" or not getattr(sys, "frozen", False):
@@ -180,15 +181,40 @@ class DesktopUpdater:
             release = latest_release(self.current_version)
             if not release["available"]:
                 return {"ok": False, "message": "No newer stable release is available."}
-            installer = download_verified_installer(release)
-            # No shell, untrusted arguments or elevated privileges. The regular
-            # Inno Setup wizard requires the user's final installation consent.
-            subprocess.Popen([str(installer)], shell=False, close_fds=True)
-            return {"ok": True, "message": "Verified installer opened. Follow its prompts to update."}
+            self._pending_installer = download_verified_installer(release)
+            # Installer is launched only after the pywebview event loop closes.
+            return {"ok": True, "message": "Update verified. Closing the application before setup."}
         except Exception:
             return {"ok": False, "message": "Update download or verification failed. No changes were installed."}
         finally:
             self._busy = False
+
+    def close_for_update(self) -> dict:
+        """Close the app only after a verified update has been staged."""
+        if self._pending_installer is None:
+            return {"ok": False, "message": "No verified update has been staged."}
+        import webview
+        # Closing the window ends webview.start(). Setup starts after that,
+        # and waits for this process to exit before touching installed files.
+        webview.windows[0].destroy()
+        return {"ok": True}
+
+    def launch_after_window_closed(self) -> bool:
+        """Called by main() once the GUI loop has exited."""
+        installer = self._pending_installer
+        self._pending_installer = None
+        if installer is None:
+            return False
+        if not installer.is_file():
+            return False
+        # Pass only our own numeric PID. Inno Setup waits until this very
+        # process has exited; never terminate unrelated processes.
+        subprocess.Popen(
+            [str(installer), "/UPGRADEPID=" + str(os.getpid()), "/NORESTARTAPPLICATIONS"],
+            shell=False,
+            close_fds=True,
+        )
+        return True
 
 
 def bundled_version() -> str:
