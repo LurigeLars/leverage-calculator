@@ -68,6 +68,10 @@ MIT licensed. No personal financial details, credentials or trading-system files
 2. Update `VERSION` to the intended new semantic version, then merge to `main`.
 3. In **Actions → Build Windows and Publish Release → Run workflow**, select **main** and check **publish_release**.
 4. The workflow tests the app, builds the `.exe` and Inno Setup installer, writes `SHA256SUMS.txt`, and publishes a versioned GitHub Release only if those steps pass. It refuses to overwrite existing release tags.
-5. On the next Windows-app launch, the app checks for the newer release. Click **Install update** and confirm to download and verify the installer, then approve the standard Windows installer. No unattended update is performed.
+5. On the next Windows-app launch, the app checks for the newer release. Click **Install update** and confirm to download and verify the installer. The application then closes itself and hands off to setup. The installer waits for the original process to exit before replacing files. No unattended update is performed.
 
 Only public release metadata (no personal account or trade data) is requested from GitHub. No API token is needed. The updater validates an expected GitHub URL, release format, installer size, and SHA-256. A checksum hosted alongside a binary proves transfer integrity against the release record, **not** publisher authenticity against a compromised GitHub account; signing and verified release provenance remain recommended for broader distribution.
+
+### Updating from v1.1.0 or v1.1.1
+
+These early versions could launch the new installer while the old program was still running, triggering an Inno Setup `unable to automatically close all applications` error. For the first upgrade to v1.1.2: cancel any failed installation, fully close `LeverageCalculator.exe` (check Windows Task Manager → Details if needed), and launch the new setup file manually from [GitHub Releases](https://github.com/LurigeLars/leverage-calculator/releases/latest). **Do not choose `Ignore error and continue`**. From v1.1.2 onward, the desktop updater closes its window and Inno Setup waits for the original process to terminate.
