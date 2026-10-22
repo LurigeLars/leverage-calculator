@@ -31,12 +31,12 @@ if not exist ".venv\Scripts\python.exe" (
 ".venv\Scripts\python.exe" -m pip install --disable-pip-version-check -r requirements-build.txt
 if errorlevel 1 goto :failed
 
-echo [3/3] Building standalone Windows application...
-".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed --name LeverageCalculator --add-data "web;web" --add-data "VERSION;." --collect-all webview --hidden-import webview.platforms.edgechromium desktop\main.py
+echo [3/3] Building standalone portable Windows application...
+".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed --name LeverageCalculatorPortable --add-data "web;web" --add-data "VERSION;." --collect-all webview --hidden-import webview.platforms.edgechromium desktop\main.py
 if errorlevel 1 goto :failed
 
 echo.
-echo DONE: dist\LeverageCalculator.exe
+echo DONE: dist\LeverageCalculatorPortable.exe
 echo You can copy the .exe anywhere. Python is not required on the target machine.
 explorer "dist"
 pause
