@@ -10,7 +10,7 @@ A compact, dark-mode **offline** calculator for leveraged trade scenarios. The U
 
 **Build a standalone Windows executable:** Install Python 3.12 or 3.13 from [python.org](https://www.python.org/downloads/windows/), then double-click `build-windows.cmd`. The script creates a private `.venv`, installs pinned build tools and generates `dist\LeverageCalculator.exe`. The executable requires Microsoft Edge WebView2 Runtime (usually present on Windows 11), **not** Python. The executable is unsigned and may trigger a Windows SmartScreen prompt.
 
-GitHub Actions builds and tests the Windows executable and installer on a Windows runner. A built package is **not** equivalent to interactive testing on the end user's device. The local build script creates the portable executable; the CI workflow also builds the update-capable Windows installer.
+GitHub Actions builds and tests the Windows executable and installer on a Windows runner. **The installed application now uses PyInstaller onedir**, which avoids the two-process launcher of PyInstaller onefile. The installer copies the executable and its bundled `_internal` runtime. Do not copy only the installed executable outside its folder; use the separate portable EXE if needed. A built package is **not** equivalent to interactive testing on the end user's device. The local build script creates the portable executable; the CI workflow also builds the update-capable Windows installer.
 
 ## Features
 
@@ -75,3 +75,9 @@ Only public release metadata (no personal account or trade data) is requested fr
 ### Updating from v1.1.0 or v1.1.1
 
 These early versions could launch the new installer while the old program was still running, triggering an Inno Setup `unable to automatically close all applications` error. For the first upgrade to v1.1.2: cancel any failed installation, fully close `LeverageCalculator.exe` (check Windows Task Manager → Details if needed), and launch the new setup file manually from [GitHub Releases](https://github.com/LurigeLars/leverage-calculator/releases/latest). **Do not choose `Ignore error and continue`**. From v1.1.2 onward, the desktop updater closes its window and Inno Setup waits for the original process to terminate.
+
+### Recovery from earlier onefile builds (v1.1.0–v1.1.2)
+
+The previous installer put a PyInstaller **onefile** executable into the install folder. It starts a GUI process and a separate background/bootloader process; the background process can keep `LeverageCalculator.exe` locked after the visible window closes. Before installing v1.1.3: close the old program, open **Task Manager → Details** and verify that **no** `LeverageCalculator.exe` process remains. If one is still present, end only that application process. Alternatively restart Windows and run the new setup before opening the old app. Do **not** ignore replacement errors or disable Windows security. Once the onedir version is installed the old onefile launcher is no longer used, reducing the chance of recurrence.
+
+The standalone portable file remains `LeverageCalculatorPortable.exe` and still uses onefile; it is not installed to the application folder. This packaging change does not prove that an already locked old executable can be overwritten without closing its process.

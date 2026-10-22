@@ -31,11 +31,27 @@ jobs:
         run: python -m unittest discover -s tests -p "test_*.py" -v
       - name: Install pinned build dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-build.txt
-      - name: Build Windows executable
+      - name: Build installed Windows application (onedir)
+        run: >
+          python -m PyInstaller
+          --noconfirm --clean --onedir --windowed
+          --name LeverageCalculator
+          --add-data "web;web"
+          --add-data "VERSION;."
+          --collect-all webview
+          --hidden-import webview.platforms.edgechromium
+          desktop/main.py
+      - name: Validate installed application layout
+        shell: pwsh
+        run: |
+          if (-not (Test-Path 'dist\LeverageCalculator\LeverageCalculator.exe')) { throw 'Main executable missing' }
+          if (-not (Test-Path 'dist\LeverageCalculator\_internal')) { throw 'Bundled runtime missing' }
+          if (-not (Test-Path 'dist\LeverageCalculator\_internal\VERSION')) { throw 'Version file missing' }
+      - name: Build optional portable single-file executable
         run: >
           python -m PyInstaller
           --noconfirm --clean --onefile --windowed
-          --name LeverageCalculator
+          --name LeverageCalculatorPortable
           --add-data "web;web"
           --add-data "VERSION;."
           --collect-all webview
@@ -66,7 +82,7 @@ jobs:
         with:
           name: LeverageCalculator-Windows
           path: |
-            dist/LeverageCalculator.exe
+            dist/LeverageCalculatorPortable.exe
             dist/LeverageCalculator-Setup.exe
             dist/SHA256SUMS.txt
           if-no-files-found: error
@@ -104,8 +120,8 @@ jobs:
           fi
           gh release create "$tag" \
             release-files/LeverageCalculator-Setup.exe \
-            release-files/LeverageCalculator.exe \
+            release-files/LeverageCalculatorPortable.exe \
             release-files/SHA256SUMS.txt \
             --target "$GITHUB_SHA" \
             --title "Leverage Calculator $tag" \
-            --notes "Windows 64-bit release. Use LeverageCalculator-Setup.exe for installation and future in-app updates. SHA-256 verification is enforced by the updater. Source is public; binaries are unsigned."
+            --notes "Windows 64-bit release. Setup installs an onedir build to avoid onefile bootloader process locks; LeverageCalculatorPortable.exe is optional. Use LeverageCalculator-Setup.exe for installation and updates. SHA-256 verification is enforced by the updater. Source is public; binaries are unsigned."
