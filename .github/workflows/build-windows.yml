@@ -125,3 +125,20 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "Leverage Calculator $tag" \
             --notes "Windows 64-bit release. Setup installs an onedir build to avoid onefile bootloader process locks; LeverageCalculatorPortable.exe is optional. Use LeverageCalculator-Setup.exe for installation and updates. SHA-256 verification is enforced by the updater. Source is public; binaries are unsigned."
+
+  security-gate:
+    name: security-gate
+    if: always()
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Require Windows calculations, updater tests and package builds
+        shell: bash
+        env:
+          BUILD_RESULT: ${{ needs.build-windows.result }}
+        run: |
+          set -euo pipefail
+          test "$BUILD_RESULT" = success
