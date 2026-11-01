@@ -78,7 +78,7 @@ jobs:
           $hash = (Get-FileHash 'dist\LeverageCalculator-Setup.exe' -Algorithm SHA256).Hash.ToLowerInvariant()
           "$hash  LeverageCalculator-Setup.exe" | Set-Content 'dist\SHA256SUMS.txt' -Encoding ascii
       - name: Archive build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LeverageCalculator-Windows
           path: |
