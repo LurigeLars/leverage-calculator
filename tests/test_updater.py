@@ -28,7 +28,7 @@ def release(version="1.2.0", data=b"fake test installer"):
 
 class UpdateTests(unittest.TestCase):
     def test_versions(self):
-        self.assertTrue(updater.parse_version("v1.10.0") > updater.parse_version("1.9.99"))
+        self.assertGreater(updater.parse_version("v1.10.0"), updater.parse_version("1.9.99"))
         for text in ("1.0", "v1.2.3rc1", "../v2.0.0", "v1.0.0/evil", "v1.2.3\n"):
             with self.assertRaises(updater.UpdateError):
                 updater.parse_version(text)
