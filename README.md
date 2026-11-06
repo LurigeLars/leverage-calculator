@@ -36,6 +36,8 @@ Spread from bid/ask (%) = (ask − bid) / ask × 100
 
 The spread is counted **once for the round trip**, not twice. Example: 15×, Adobe +0.50%, spread 1.35% implies an estimated **+6.15%** before additional costs.
 
+The bid/ask spread is divided by the **ask**, the price you buy at, so it is the share of your stake lost to an immediate sell. Avanza Market Engine divides by the **mid price** instead: bid 9.80 / ask 10.00 is 2.00 % here and 2.02 % there. Recompute from bid and ask rather than copying a spread percentage across.
+
 **Limitations:** The calculator is an educational first-order estimate, not a product-specific payoff engine or executable quote. Real certificates and derivatives may have reset effects, path dependency, changing leverage, knock-out/barrier terms, issuer repricing, FX exposure, funding costs, slippage and changing bid/ask. Large negative modeled outcomes can be unrealistic for fully paid certificates. No trading is performed and no market data is fetched. Not investment advice.
 
 ## Tests
@@ -80,4 +82,4 @@ These early versions could launch the new installer while the old program was st
 
 The previous installer put a PyInstaller **onefile** executable into the install folder. It starts a GUI process and a separate background/bootloader process; the background process can keep `LeverageCalculator.exe` locked after the visible window closes. Before installing v1.1.3: close the old program, open **Task Manager → Details** and verify that **no** `LeverageCalculator.exe` process remains. If one is still present, end only that application process. Alternatively restart Windows and run the new setup before opening the old app. Do **not** ignore replacement errors or disable Windows security. Once the onedir version is installed the old onefile launcher is no longer used, reducing the chance of recurrence.
 
-The standalone portable file remains `LeverageCalculatorPortable.exe` and still uses onefile; it is not installed to the application folder. This packaging change does not prove that an already locked old executable can be overwritten without closing its process.
+The standalone portable file remains `LeverageCalculatorPortable.exe` and still uses onefile; it is not installed to the application folder. `SHA256SUMS.txt` covers only the installer, because the updater in installed versions requires exactly one line; verify the portable file against the SHA-256 that GitHub shows next to it on the release page. This packaging change does not prove that an already locked old executable can be overwritten without closing its process.

@@ -36,6 +36,9 @@ test('input validation', () => {
   assert.throws(() => estimate({ leverage:0,movePct:1,spreadPct:0 }));
   assert.throws(() => estimate({ leverage:10,movePct:1,spreadPct:-1 }));
   assert.throws(() => estimate({ leverage:NaN,movePct:1,spreadPct:1 }));
+  assert.throws(() => estimate({ leverage:10,movePct:100.01,spreadPct:1 }), RangeError);
+  assert.throws(() => estimate({ leverage:10,movePct:-100.01,spreadPct:1 }), RangeError);
+  assert.doesNotThrow(() => estimate({ leverage:10,movePct:-100,spreadPct:1 }));
   assert.throws(() => spreadFromQuotes(15,14));
   assert.throws(() => spreadFromQuotes(0,15));
 });
