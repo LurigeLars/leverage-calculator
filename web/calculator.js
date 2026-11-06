@@ -21,6 +21,7 @@
     const slippagePct = requireFinite(input.slippagePct === undefined ? 0 : input.slippagePct, 'slippagePct');
 
     if (leverage <= 0 || leverage > 100) throw new RangeError('leverage must be between 0 and 100');
+    if (movePct < -100 || movePct > 100) throw new RangeError('movePct must be between -100 and 100');
     if (spreadPct < 0 || feesPct < 0 || slippagePct < 0) throw new RangeError('Costs cannot be negative');
     if (targetPct < 0) throw new RangeError('targetPct cannot be negative');
 

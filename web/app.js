@@ -48,20 +48,20 @@
     const slippagePct = numeric(elements.slippage, NaN);
     const capital = numeric(elements.capital, NaN);
 
-    const valid = [leverage, movePct, spreadPct, targetPct, feesPct, slippagePct].every(Number.isFinite)
-      && leverage > 0 && leverage <= 100 && movePct >= -100 && movePct <= 100
-      && spreadPct >= 0 && targetPct >= 0 && feesPct >= 0 && slippagePct >= 0;
-
-    if (!valid) {
+    const input = { leverage, movePct, spreadPct, targetPct, feesPct, slippagePct, capital };
+    let result;
+    try {
+      result = LeverageCalculator.estimate(input); // the engine owns every input rule
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
       $('model-warning').hidden = false;
-      $('model-warning').textContent = 'Check the inputs: leverage must be above 0 and at most 100; costs and target cannot be negative.';
+      $('model-warning').textContent = 'Check the inputs: leverage must be above 0 and at most 100; the move must be between -100 and +100 %; costs and target cannot be negative.';
       $('net-result').textContent = '–';
       current = null;
       return;
     }
 
-    current = { leverage, movePct, spreadPct, targetPct, feesPct, slippagePct, capital };
-    const result = LeverageCalculator.estimate(current);
+    current = input;
     current.result = result;
 
     setSelectedLeverage(leverage);
